@@ -24,7 +24,7 @@ export const AppContextProvider = ({children}) => {
       fetchUser();
     },[])
 
-    useEffect((user)=>{
+    useEffect(()=>{
       if(user){
         fetchUserChats()
       }
@@ -32,7 +32,7 @@ export const AppContextProvider = ({children}) => {
         setChats([])
         setSelectedChat(null)
       }
-    },[])
+    },[user])
 
     useEffect(()=>{
        if(theme === 'dark'){
@@ -41,10 +41,12 @@ export const AppContextProvider = ({children}) => {
        else[
         document.documentElement.classList.remove('dark')
        ]
+       localStorage.setItem('theme', theme);
+
     },[theme])
 
 
-   const value = { navigate, user, setUser, chats, setChats, selectedChat, setSelectedChat, theme }
+   const value = { navigate, user, setUser, chats, setChats, selectedChat, setSelectedChat, theme, setTheme }
 
     return (
         <AppContext.Provider value={value}>

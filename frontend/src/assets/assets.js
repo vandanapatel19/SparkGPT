@@ -1,5 +1,6 @@
 import logo from "./logo.svg";
-import sparklight from "./sparklight.png";
+import sparklight from "./sparklight.jpeg";
+import sparkdark from "./sparkdark.jpeg";
 import logo_full from "./logo_full.svg";
 import logo_full_dark from "./logo_full_dark.svg";
 import search_icon from "./search_icon.svg";
@@ -31,6 +32,7 @@ import ai_image12 from "./ai_image12.jpg";
 export const assets = {
     logo,
     sparklight,
+    sparkdark,
     logo_full,
     search_icon,
     user_icon,
@@ -49,7 +51,7 @@ export const assets = {
 
 export const dummyUserData = {
     "_id": "689c6deed410acddc0d95a0e",
-    "name": "GreatStack",
+    "name": "SparkGPT",
     "email": "admin@example.com",
     "password": "$2b$10$VESVdPDjL5LF.KCU6jKyqeXNSLASAAfpR2kkIJExtMO.PJvZJAudy",
     "credits": 200,
