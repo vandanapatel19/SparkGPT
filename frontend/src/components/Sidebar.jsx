@@ -12,7 +12,7 @@ const Sidebar = ({isMenuOpen, setIsMenuOpen}) => {
     <div className={`flex flex-col h-screen min-w-72 p-5 dark:bg-linear-to-b from-[#242124] tom-[#000000]/30 border-r border-[#80609F]/30 backdrop:blur-3xl transition-all duration-500 max-md:absolute left-0 z-1 ${!isMenuOpen && 'max-md:-translate-x-full' }`}>
       {/* logo */}
       <img src={theme === 'dark' ? assets.sparkdark : assets.sparklight} alt="" className='w-full max-w-48' />
-
+      
       {/* new chat button */}
       <button className='flex items-center justify-center mt-5 py-2 w-full text-white bg-linear-to-r from-[#A456F7] to-[#3D81F6] text-sm rounded-md cursor-pointer '>
         <span className='mr-2 text-xl'>+</span> New Chat
@@ -29,7 +29,7 @@ const Sidebar = ({isMenuOpen, setIsMenuOpen}) => {
       <div className='flex-1 overflow-y-scroll mt-3 text-sm space-y-3'>
         {
           chats.filter((chat)=> chat.messages[0] ? chat.messages[0].content.toLowerCase().includes(search.toLowerCase()): chat.name.toLowerCase().includes(search.toLowerCase())).map((chat)=> (
-            <div onClick={()=> {navigate('/community'); setIsMenuOpen(false); setSelectedChat(chat)}} key={chat._id} className='p-2 px-4 dark:bg-[#57317C]/10 border border-gray-300 dark:border-[#80609F]/15 rounded-md cursor-pointer flex justify-between group'>
+            <div onClick={()=> {setIsMenuOpen(false); setSelectedChat(chat)}} key={chat._id} className='p-2 px-4 dark:bg-[#57317C]/10 border border-gray-300 dark:border-[#80609F]/15 rounded-md cursor-pointer flex justify-between group'>
               <div>
                 <p className='truncate w-full'>{chat.messages.length > 0 ? chat.messages[0].content.slice(0,32) : chat.name}</p>
                 <p className='text-xs text-gray-500 dark:text-[#B1A6C0]'>{moment(chat.updatedAt).fromNow()}</p>

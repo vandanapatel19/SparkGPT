@@ -1,15 +1,16 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { useEffect, useState, createContext, useContext } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { dummyChats, dummyUserData } from "../assets/assets";
 
-const AppContext = createContext();
+
+export const AppContext = createContext();
 
 export const AppContextProvider = ({children}) => {
 
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [chats, setChats] = useState([]);
-    const [selectedChat, setSelectedChat] = useState(null);
+    const [selectedChat, setSelectedChat] = useState();
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
 
     const fetchUser = async() => {
@@ -17,7 +18,7 @@ export const AppContextProvider = ({children}) => {
     }
     const fetchUserChats = async() => {
         setChats(dummyChats)
-        setSelectedChat(dummyChats[0])
+      setSelectedChat(dummyChats[0])
     }
 
     useEffect(()=>{
@@ -54,4 +55,5 @@ export const AppContextProvider = ({children}) => {
         </AppContext.Provider>
     )
 }
-export const useAppContext = () => useContext(AppContext)
+
+export const useAppContext = () => useContext(AppContext);
