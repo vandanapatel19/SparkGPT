@@ -11,6 +11,7 @@ const Message = ({message}) => {
   },[message.content])
 
   return (
+    
     <div>
        {message.role === "user" ? (
         <div className='flex items-start justify-end my-4 gap-2'>
