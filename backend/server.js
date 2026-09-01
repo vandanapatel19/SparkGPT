@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { application } from 'express';
 import 'dotenv/config';
 import cors from 'cors'
 import connectDB from './configs/db.js';
@@ -7,6 +7,7 @@ import chatRouter from './routes/chatRoutes.js';
 import messageRouter from './routes/messageRoutes.js';
 import imagekit from './configs/imagekit.js';
 import creditRouter from './routes/creditRoutes.js';
+import { stripeWebHooks } from './controllers/webhooks.js';
 
 const app = express();
 
@@ -16,12 +17,16 @@ app.use(express.json())
 
 await connectDB();
 
+//stripe webhooks
+app.post('/api/stripe', express.raw({type:'application/json'}), stripeWebHooks)
+
 //Routes
-app.get('/', (req, res) => { res.send("API Working!") })
+app.get('/', (req, res) => { res.send("Server is Live!") })
 app.use('/api/user', userRouter)
 app.use('/api/chat', chatRouter)
 app.use('/api/message', messageRouter)
 app.use('/api/credit', creditRouter)
+
 
 const PORT = process.env.PORT || 3000
 
