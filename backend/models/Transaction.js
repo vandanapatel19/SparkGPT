@@ -5,7 +5,7 @@ const transactionSchema = new mongoose.Schema({
     planId: { type: String, required: true },
     amount: { type: Number, required: true },
     credits: { type: Number, required: true },
-    isPaid: { type: Boolean, dafault: false },
+    isPaid: { type: Boolean, default: false },
 
 }, { timestamps: true })
 

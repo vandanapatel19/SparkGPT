@@ -5,22 +5,120 @@ import axios from 'axios'
 import openai from '../configs/openai.js'
 
 
-// Text-based AI message controller
+// // Text-based AI message controller
+// export const textMessageController = async (req, res) => {
+//     try {
+//         const userId = req.user._id;
+
+//         // Check credits
+//         if (req.user.credits < 1) {
+//             return res.json({
+//                 success: false,
+//                 message: "You don't have enough credits to use this feature"
+//             });
+//         }
+
+//         const { chatId, prompt } = req.body;
+
+//         // Validate input
+//         if (!chatId || !prompt) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: "chatId and prompt are required"
+//             });
+//         }
+
+//         // Find chat
+//         const chat = await Chat.findOne({
+//             userId,
+//             _id: chatId
+//         });
+
+//         if (!chat) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: "Chat not found"
+//             });
+//         }
+
+//         // Save user message
+//         chat.messages.push({
+//             role: "user",
+//             isImage: false,
+//             content: prompt,
+//             timestamp: Date.now()
+//         });
+
+//         // Generate AI response
+//         const { choices } = await openai.chat.completions.create({
+//             model: "gemini-3.7-flash",
+//             messages: [
+//                 {
+//                     role: "user",
+//                     content: prompt
+//                 }
+//             ]
+//         });
+
+//         if (!choices || !choices[0] || !choices[0].message) {
+//             return res.status(500).json({
+//                 success: false,
+//                 message: "No response received from AI"
+//             });
+//         }
+
+//         const reply = {
+//             ...choices[0].message,
+//             isImage: false,
+//             timestamp: Date.now()
+//         };
+
+//         // Save AI response
+//         chat.messages.push(reply);
+//         await chat.save();
+
+//         // Deduct credit
+//         await User.updateOne(
+//             { _id: userId },
+//             { $inc: { credits: -1 } }
+//         );
+
+//         return res.json({
+//             success: true,
+//             reply
+//         });
+
+//     } catch (error) {
+//         console.error("Text generation error:", error);
+
+//         return res.status(500).json({
+//             success: false,
+//             message: error.message
+//         });
+//     }
+// };
+
 export const textMessageController = async (req, res) => {
+    console.log("========== TEXT API HIT ==========");
+
     try {
+        console.log("1. User:", req.user?._id);
+        console.log("2. Request body:", req.body);
+
         const userId = req.user._id;
 
-        // Check credits
         if (req.user.credits < 1) {
-            return res.json({
+            return res.status(400).json({
                 success: false,
-                message: "You don't have enough credits to use this feature"
+                message: "You don't have enough credits"
             });
         }
 
         const { chatId, prompt } = req.body;
 
-        // Validate input
+        console.log("3. Chat ID:", chatId);
+        console.log("4. Prompt:", prompt);
+
         if (!chatId || !prompt) {
             return res.status(400).json({
                 success: false,
@@ -28,11 +126,14 @@ export const textMessageController = async (req, res) => {
             });
         }
 
-        // Find chat
+        console.log("5. Finding chat...");
+
         const chat = await Chat.findOne({
-            userId,
-            _id: chatId
+            _id: chatId,
+            userId
         });
+
+        console.log("6. Chat found:", !!chat);
 
         if (!chat) {
             return res.status(404).json({
@@ -41,16 +142,9 @@ export const textMessageController = async (req, res) => {
             });
         }
 
-        // Save user message
-        chat.messages.push({
-            role: "user",
-            isImage: false,
-            content: prompt,
-            timestamp: Date.now()
-        });
+        console.log("7. Calling Gemini...");
 
-        // Generate AI response
-        const { choices } = await openai.chat.completions.create({
+        const response = await openai.chat.completions.create({
             model: "gemini-3.7-flash",
             messages: [
                 {
@@ -60,44 +154,72 @@ export const textMessageController = async (req, res) => {
             ]
         });
 
-        if (!choices || !choices[0] || !choices[0].message) {
+        console.log("8. Gemini response received");
+
+        console.log(response);
+
+        const content = response?.choices?.[0]?.message?.content;
+
+        if (!content) {
             return res.status(500).json({
                 success: false,
-                message: "No response received from AI"
+                message: "No response received from Gemini"
             });
         }
 
-        const reply = {
-            ...choices[0].message,
-            isImage: false,
-            timestamp: Date.now()
-        };
+        console.log("9. AI content:", content);
 
-        // Save AI response
-        chat.messages.push(reply);
+        chat.messages.push({
+            role: "user",
+            isImage: false,
+            content: prompt,
+            timestamp: Date.now()
+        });
+
+        chat.messages.push({
+            role: "assistant",
+            isImage: false,
+            content: content,
+            timestamp: Date.now()
+        });
+
+        console.log("10. Saving chat...");
+
         await chat.save();
 
-        // Deduct credit
+        console.log("11. Chat saved");
+
         await User.updateOne(
             { _id: userId },
             { $inc: { credits: -1 } }
         );
 
+        console.log("12. Credit deducted");
+
         return res.json({
             success: true,
-            reply
+            reply: {
+                role: "assistant",
+                isImage: false,
+                content,
+                timestamp: Date.now()
+            }
         });
 
     } catch (error) {
-        console.error("Text generation error:", error);
 
-        return res.status(500).json({
+        console.error("========== TEXT ERROR ==========");
+        console.error("Status:", error.status);
+        console.error("Code:", error.code);
+        console.error("Message:", error.message);
+        console.error("================================");
+
+        return res.status(error.status || 500).json({
             success: false,
-            message: error.message
+            message: error.message || "Text generation failed"
         });
     }
 };
-
 
 // Image generation Message controller
 export const imageMessageController = async (req, res) => {
@@ -165,7 +287,7 @@ export const imageMessageController = async (req, res) => {
         // Wait for ImageKit AI to finish generation
         let aiImageResponse = null;
 
-        for (let attempt = 1; attempt <= 30; attempt++) {
+        for (let attempt = 1; attempt <= 50; attempt++) {
 
             try {
                 const response = await axios.get(

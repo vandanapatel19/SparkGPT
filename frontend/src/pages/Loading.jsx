@@ -1,15 +1,32 @@
 import React, { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
+import toast from 'react-hot-toast'
+import { useAppContext } from '../context/AppContext.jsx'
 
 const Loading = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { fetchUser, token } = useAppContext();
 
-  useEffect(()=>{
-    const timeout = setTimeout(()=>{
-      navigate('/')
-    },5000)
-    return () => clearTimeout(timeout)
-  },[])
+ useEffect(() => {
+  const isStripeReturn = new URLSearchParams(location.search).has('session_id');
+
+  const timeout = setTimeout(async () => {
+    if (token && fetchUser) {
+      await fetchUser();
+    }
+
+    if (isStripeReturn) {
+      toast.success('Payment completed successfully!');
+    }
+
+    navigate('/');
+  }, 500);
+
+  return () => clearTimeout(timeout);
+}, [fetchUser, navigate, token, location.search]);
+
+
 
   return (
     <div className='bg-linear-to-b from-[#531B81] to-[#29184B] backdrop-opacity-60 flex items-center justify-center h-screen w-screen text-white text-2xl'>

@@ -13,12 +13,12 @@ const app = express();
 
 //Middleware
 app.use(cors())
-app.use(express.json())
 
 await connectDB();
 
 //stripe webhooks
-app.post('/api/stripe', express.raw({type:'application/json'}), stripeWebHooks)
+app.post('/api/stripe', express.raw({ type: 'application/json' }), stripeWebHooks)
+app.use(express.json())
 
 //Routes
 app.get('/', (req, res) => { res.send("Server is Live!") })

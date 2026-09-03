@@ -38,53 +38,97 @@ export const getPlans = async (req, res) => {
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
+export const verifyCheckoutSession = async (req, res) => {
+    try {
+        const { session_id } = req.query;
+
+        if (!session_id) {
+            return res.status(400).json({ success: false, message: "Missing session_id" });
+        }
+
+        const session = await stripe.checkout.sessions.retrieve(session_id);
+
+        if (session.payment_status !== 'paid') {
+            return res.json({ success: false, message: 'Payment not complete yet' });
+        }
+
+        const transactionId = session.metadata?.transactionId;
+        if (!transactionId) {
+            return res.status(400).json({ success: false, message: 'Missing transaction metadata' });
+        }
+
+        const transaction = await Transaction.findOne({ _id: transactionId });
+        if (!transaction) {
+            return res.status(404).json({ success: false, message: 'Transaction not found' });
+        }
+
+        if (transaction.isPaid) {
+            return res.json({ success: true, message: 'Credits already added', alreadyProcessed: true });
+        }
+
+        const user = await User.findById(transaction.userId);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        user.credits += transaction.credits;
+        await user.save();
+
+        transaction.isPaid = true;
+        await transaction.save();
+
+        return res.json({ success: true, message: 'Credits added successfully', credits: user.credits });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 //API Controller for purchasing plan
 export const purchasePlan = async (req, res) => {
     try {
         const { planId } = req.body;
-    const userId = req.user._id;
-    const plan = plans.find(plan => plan._id === planId);
+        const userId = req.user._id;
+        const plan = plans.find(plan => plan._id === planId);
 
-    if (!plan) {
-        res.json({ success: false, message: "Invalid plan" })
-    }
+        if (!plan) {
+            return res.status(400).json({ success: false, message: "Invalid plan" });
+        }
 
-    //create new transaction
-    const transaction = await Transaction.create({
-        userId: userId,
-        planId: plan._id,
-        credits: plan.credits,
-        amount: plan.credits,
-        isPaid: false
-    })
+        //create new transaction
+        const transaction = await Transaction.create({
+            userId: userId,
+            planId: plan._id,
+            credits: plan.credits,
+            amount: plan.price,
+            isPaid: false
+        });
 
-    const {origin} = req.headers;
+        const origin = req.headers.origin || process.env.FRONTEND_URL || 'http://localhost:5173';
 
-    const session = await stripe.checkout.sessions.create({
-        line_items: [
-            {
-                price_data: {
-                    currency: "usd",
-                    unit_amount: plan.price*100,
-                    product_data: {
-                        name: plan.name
-                    }
+        const session = await stripe.checkout.sessions.create({
+            line_items: [
+                {
+                    price_data: {
+                        currency: "usd",
+                        unit_amount: plan.price * 100,
+                        product_data: {
+                            name: plan.name
+                        }
+                    },
+                    quantity: 1,
                 },
-                quantity: 1,
-            },
-        ],
-        mode: 'payment',
-        success_url:`${origin}/loading`,
-        cancel_url: `${origin}`,
-        metadata:{transactionId: transaction._id.toString(), appId:'sparkgtp'} ,
-        expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
+            ],
+            mode: 'payment',
+            success_url: `${origin}/loading?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${origin}/credits`,
+            metadata: { transactionId: transaction._id.toString(), appId: 'sparkgpt' },
+            expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
 
-    });
+        });
 
-    res.json({success:true, url: session.url})
+        return res.json({ success: true, url: session.url });
 
     } catch (error) {
-    res.json({success:false, message:error.message})
-        
+        return res.status(500).json({ success: false, message: error.message });
     }
 }

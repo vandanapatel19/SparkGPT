@@ -37,7 +37,7 @@ export const loginUser = async (req, res) => {
             const isMatch = await bcrypt.compare(password, user.password);
             if (isMatch) {
                 const token = generateToken(user._id);
-                return res.json({ success: true, messgae: "Logged In successfully!", token });
+                return res.json({ success: true, message: "Logged In successfully!", token });
             }
         }
         return res.json({ success: false, message: "invalid email or password" });
@@ -73,12 +73,12 @@ export const getPublishedImages = async(req, res)=>{
                 $project:{
                     _id:0,
                     imageUrl:"$messages.content",
-                    username:"$userName"
+                    userName:"$userName"
                 }
             }
         ])
 
-        res.json({success: true, images:publishedImageMessages.reverse()})
+        res.json({success: true, images: publishedImageMessages.reverse()})
 
     } catch (error) {
         res.json({success: false, message:error.message})

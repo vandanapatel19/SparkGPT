@@ -9,17 +9,22 @@ import { assets } from './assets/assets'
 import './assets/prism.css'
 import Loading from './pages/Loading'
 import { useAppContext } from './context/AppContext'
+import axios from 'axios'
+import {Toaster} from 'react-hot-toast'
 
 const App = () => {
-   const {user} = useAppContext()
+   const {user, userLoading} = useAppContext()
    const [isMenuOpen, setIsMenuOpen] = useState(false);
    const {pathname} = useLocation();
 
-   if(pathname === '/loading') return <Loading/>
+   axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
+
+   if(pathname === '/loading' || userLoading) return <Loading/>
 
 
   return (
     <>
+    <Toaster/>
     {!isMenuOpen && <img src={assets.menu_icon} alt="" className='md:hidden absolute top-3 left-3 w-8 h-8 cursor-pointer not-dark:invert' onClick={()=> setIsMenuOpen(true)} /> }
      {user?
      (
