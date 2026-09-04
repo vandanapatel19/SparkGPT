@@ -19,7 +19,9 @@ const App = () => {
 
    axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
 
-   if(pathname === '/loading' || userLoading) return <Loading/>
+  if(pathname === '/loading' || userLoading) {
+    return <Loading redirectTo={pathname === '/loading' ? '/' : undefined} />
+  }
 
 
   return (

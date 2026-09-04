@@ -30,11 +30,7 @@ export const AppContextProvider = ({ children }) => {
     try {
       console.log("TOKEN:", token);
 
-      const { data } = await axios.get('/api/user/data', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const { data } = await axios.get('/api/user/data', { headers: { Authorization: `Bearer ${token}` } });
       if (data.success) {
         setUser(data.user)
       }

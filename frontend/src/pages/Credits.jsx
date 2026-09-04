@@ -63,7 +63,7 @@ const Credits = () => {
                   ))}
                 </ul>
               </div>
-              <button onClick={()=> toast.promise(purchasePlan(plan._id), {setLoading:'Processing'})} className='mt-6 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white font-medium py-2 rounded transition-colors cursor-pointer'>Buy Now</button>
+              <button onClick={()=> toast.promise(purchasePlan(plan._id), {loading:'Processing'})} className='mt-6 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 text-white font-medium py-2 rounded transition-colors cursor-pointer'>Buy Now</button>
             </div>
           ))
         }

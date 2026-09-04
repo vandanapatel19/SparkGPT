@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { useAppContext } from '../context/AppContext.jsx'
 
-const Loading = () => {
+const Loading = ({ redirectTo }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { fetchUser, token } = useAppContext();
@@ -20,11 +20,13 @@ const Loading = () => {
       toast.success('Payment completed successfully!');
     }
 
-    navigate('/');
+    if (redirectTo) {
+      navigate(redirectTo);
+    }
   }, 500);
 
   return () => clearTimeout(timeout);
-}, [fetchUser, navigate, token, location.search]);
+}, [fetchUser, navigate, token, location.search, redirectTo]);
 
 
 
